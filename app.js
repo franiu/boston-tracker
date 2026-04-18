@@ -1,16 +1,31 @@
 // app.js — orchestrates all modules for the Marathon Live Tracker
 
 import { getCourseGeoJSON, getCourseBounds, getCourseLengthMiles } from './course-data.js';
-import { getPacingPlan, buildCumulativeTimeTable } from './pacing-plan.js';
+import { getPacingPlan, buildCumulativeTimeTable, mergeCheckpointsIntoTable } from './pacing-plan.js';
 import { getDistanceAtTime, interpolatePosition } from './position-calculator.js';
 import { getStartTime, setStartTime } from './cookie-store.js';
+import { getCheckpoints } from './checkpoint-store.js';
 import { initMap, updateRunnerPosition, toggleMapStyle } from './map-controller.js';
 import { initUI, isDebugMode, getSliderValue } from './ui-controller.js';
 
 // 1. Build cumulative time table from pacing plan
 const pacingPlan = getPacingPlan();
-const cumulativeTable = buildCumulativeTimeTable(pacingPlan);
-const totalRaceTime = cumulativeTable[cumulativeTable.length - 1].cumulativeMinutes;
+const baseCumulativeTable = buildCumulativeTimeTable(pacingPlan);
+
+// Active table — starts as base, gets rebuilt when checkpoints change
+let cumulativeTable = baseCumulativeTable;
+let totalRaceTime = cumulativeTable[cumulativeTable.length - 1].cumulativeMinutes;
+
+/**
+ * Rebuilds the cumulative table by merging in any stored checkpoints.
+ */
+function rebuildTable(checkpoints) {
+  cumulativeTable = mergeCheckpointsIntoTable(baseCumulativeTable, checkpoints);
+  totalRaceTime = cumulativeTable[cumulativeTable.length - 1].cumulativeMinutes;
+}
+
+// Apply any stored checkpoints on load
+rebuildTable(getCheckpoints());
 
 // 2. Get course data
 const courseGeoJSON = getCourseGeoJSON();
@@ -29,6 +44,7 @@ const infoMilePace = document.getElementById('info-mile-pace');
 const infoAvgPace = document.getElementById('info-avg-pace');
 const infoRemaining = document.getElementById('info-remaining');
 const infoElapsed = document.getElementById('info-elapsed');
+const infoDistance = document.getElementById('info-distance');
 
 /**
  * Formats decimal minutes to MM:SS string.
@@ -105,6 +121,9 @@ function updateInfoPanel(elapsedMinutes, distanceMiles) {
   } else {
     infoElapsed.textContent = formatTime(Math.min(elapsedMinutes, totalRaceTime));
   }
+
+  // Distance
+  infoDistance.textContent = `${distanceMiles.toFixed(1)} mi`;
 }
 
 /**
@@ -179,6 +198,10 @@ initUI({
     if (isDebugMode()) {
       tick();
     }
+  },
+  onCheckpointsChanged(checkpoints) {
+    rebuildTable(checkpoints);
+    tick();
   }
 });
 

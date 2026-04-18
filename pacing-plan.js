@@ -75,3 +75,91 @@ export function buildCumulativeTimeTable(pacingPlan) {
 
   return table;
 }
+
+/**
+ * Merges actual checkpoint data into the cumulative time table.
+ *
+ * For segments up to and including the last checkpoint, uses actual elapsed times
+ * (linearly interpolated between checkpoints for intermediate mile markers).
+ * For segments beyond the last checkpoint, projects forward using the pacing plan
+ * paces anchored to the last checkpoint's actual time.
+ *
+ * @param {CumulativeEntry[]} baseTable - The original pacing-plan-based cumulative table
+ * @param {{ km: number, miles: number, elapsedMinutes: number }[]} checkpoints - Sorted by km
+ * @returns {CumulativeEntry[]}
+ */
+export function mergeCheckpointsIntoTable(baseTable, checkpoints) {
+  if (!checkpoints || checkpoints.length === 0) return baseTable;
+
+  // Build anchor points: mile 0 = 0 min, plus each checkpoint
+  const anchors = [{ mile: 0, cumulativeMinutes: 0 }];
+  for (const cp of checkpoints) {
+    anchors.push({ mile: cp.miles, cumulativeMinutes: cp.elapsedMinutes });
+  }
+
+  const lastCheckpointMile = anchors[anchors.length - 1].mile;
+  const lastCheckpointTime = anchors[anchors.length - 1].cumulativeMinutes;
+
+  const merged = [{ mile: 0, cumulativeMinutes: 0 }];
+
+  for (let i = 1; i < baseTable.length; i++) {
+    const entry = baseTable[i];
+
+    if (entry.mile <= lastCheckpointMile) {
+      // This mile is before or at the last checkpoint — interpolate from anchors
+      const time = interpolateFromAnchors(anchors, entry.mile);
+      merged.push({ mile: entry.mile, cumulativeMinutes: time });
+    } else {
+      // This mile is beyond the last checkpoint — use pacing plan offset
+      // Find the base table's time at the last checkpoint mile (interpolated)
+      const baseTimeAtLastCp = interpolateFromTable(baseTable, lastCheckpointMile);
+      const baseTimeAtThisMile = entry.cumulativeMinutes;
+      const delta = baseTimeAtThisMile - baseTimeAtLastCp;
+      merged.push({ mile: entry.mile, cumulativeMinutes: lastCheckpointTime + delta });
+    }
+  }
+
+  return merged;
+}
+
+/**
+ * Linearly interpolates a cumulative time from anchor points for a given mile.
+ * @param {{ mile: number, cumulativeMinutes: number }[]} anchors - Sorted by mile
+ * @param {number} mile
+ * @returns {number}
+ */
+function interpolateFromAnchors(anchors, mile) {
+  if (mile <= anchors[0].mile) return anchors[0].cumulativeMinutes;
+  if (mile >= anchors[anchors.length - 1].mile) return anchors[anchors.length - 1].cumulativeMinutes;
+
+  for (let i = 1; i < anchors.length; i++) {
+    if (mile <= anchors[i].mile) {
+      const prev = anchors[i - 1];
+      const curr = anchors[i];
+      const frac = (mile - prev.mile) / (curr.mile - prev.mile);
+      return prev.cumulativeMinutes + frac * (curr.cumulativeMinutes - prev.cumulativeMinutes);
+    }
+  }
+  return anchors[anchors.length - 1].cumulativeMinutes;
+}
+
+/**
+ * Linearly interpolates a cumulative time from a table for a given mile.
+ * @param {CumulativeEntry[]} table
+ * @param {number} mile
+ * @returns {number}
+ */
+function interpolateFromTable(table, mile) {
+  if (mile <= table[0].mile) return table[0].cumulativeMinutes;
+  if (mile >= table[table.length - 1].mile) return table[table.length - 1].cumulativeMinutes;
+
+  for (let i = 1; i < table.length; i++) {
+    if (mile <= table[i].mile) {
+      const prev = table[i - 1];
+      const curr = table[i];
+      const frac = (mile - prev.mile) / (curr.mile - prev.mile);
+      return prev.cumulativeMinutes + frac * (curr.cumulativeMinutes - prev.cumulativeMinutes);
+    }
+  }
+  return table[table.length - 1].cumulativeMinutes;
+}

@@ -2,6 +2,7 @@
 // Manages the start time input UI, validation, view toggle, and event listeners.
 
 import { getStartTime, setStartTime } from './cookie-store.js';
+import { getCheckpoints, setCheckpoint, removeCheckpoint, CHECKPOINT_KMS, kmToMiles } from './checkpoint-store.js';
 
 let overlayEl = null;
 let errorEl = null;
@@ -244,4 +245,98 @@ function wireHamburgerMenu(callbacks) {
       }
     });
   }
+
+  // Checkpoint UI wiring
+  wireCheckpointUI(callbacks);
+}
+
+/**
+ * Formats elapsed minutes as H:MM:SS.
+ */
+function formatElapsedForDisplay(minutes) {
+  const h = Math.floor(minutes / 60);
+  const m = Math.floor(minutes % 60);
+  const s = Math.round((minutes - Math.floor(minutes)) * 60);
+  return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
+function wireCheckpointUI(callbacks) {
+  const listEl = document.getElementById('checkpoint-list');
+  const kmSelect = document.getElementById('checkpoint-km');
+  const timeInput = document.getElementById('checkpoint-time');
+  const addBtn = document.getElementById('checkpoint-add-btn');
+
+  if (!listEl || !kmSelect || !timeInput || !addBtn) return;
+
+  function renderCheckpoints() {
+    const checkpoints = getCheckpoints();
+    listEl.innerHTML = '';
+
+    for (const cp of checkpoints) {
+      const row = document.createElement('div');
+      row.className = 'checkpoint-entry';
+
+      const label = document.createElement('span');
+      label.className = 'checkpoint-entry-label';
+      label.textContent = `${cp.km}K`;
+
+      const time = document.createElement('span');
+      time.className = 'checkpoint-entry-time';
+      time.textContent = formatElapsedForDisplay(cp.elapsedMinutes);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'checkpoint-remove-btn';
+      removeBtn.textContent = '✕';
+      removeBtn.addEventListener('click', () => {
+        removeCheckpoint(cp.km);
+        renderCheckpoints();
+        if (callbacks.onCheckpointsChanged) {
+          callbacks.onCheckpointsChanged(getCheckpoints());
+        }
+      });
+
+      row.appendChild(label);
+      row.appendChild(time);
+      row.appendChild(removeBtn);
+      listEl.appendChild(row);
+    }
+
+    // Remove already-used km values from the select
+    const usedKms = new Set(checkpoints.map(c => c.km));
+    for (const option of kmSelect.options) {
+      if (option.value) {
+        option.disabled = usedKms.has(Number(option.value));
+      }
+    }
+  }
+
+  addBtn.addEventListener('click', () => {
+    const km = Number(kmSelect.value);
+    const timeVal = timeInput.value;
+
+    if (!km || !timeVal) return;
+
+    // Parse HH:MM:SS or HH:MM time input as elapsed time
+    const parts = timeVal.split(':').map(Number);
+    let elapsedMinutes;
+    if (parts.length === 3) {
+      elapsedMinutes = parts[0] * 60 + parts[1] + parts[2] / 60;
+    } else if (parts.length === 2) {
+      elapsedMinutes = parts[0] * 60 + parts[1];
+    } else {
+      return;
+    }
+
+    setCheckpoint(km, elapsedMinutes);
+    kmSelect.value = '';
+    timeInput.value = '';
+    renderCheckpoints();
+
+    if (callbacks.onCheckpointsChanged) {
+      callbacks.onCheckpointsChanged(getCheckpoints());
+    }
+  });
+
+  // Initial render
+  renderCheckpoints();
 }

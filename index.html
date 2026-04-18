@@ -28,6 +28,27 @@
         </label>
         <input type="range" id="time-slider" class="time-slider" min="0" max="100" value="0">
       </div>
+
+      <!-- Checkpoint input -->
+      <div class="checkpoint-section">
+        <div class="checkpoint-header">Checkpoints</div>
+        <div id="checkpoint-list" class="checkpoint-list"></div>
+        <div class="checkpoint-input-row">
+          <select id="checkpoint-km" class="checkpoint-select">
+            <option value="">km</option>
+            <option value="5">5K</option>
+            <option value="10">10K</option>
+            <option value="15">15K</option>
+            <option value="20">20K</option>
+            <option value="25">25K</option>
+            <option value="30">30K</option>
+            <option value="35">35K</option>
+            <option value="40">40K</option>
+          </select>
+          <input type="time" id="checkpoint-time" class="checkpoint-time-input" step="1" placeholder="HH:MM:SS">
+          <button id="checkpoint-add-btn" class="checkpoint-add-btn" title="Add checkpoint">+</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -51,6 +72,11 @@
     <div class="info-item">
       <span class="info-label">Est. Remaining</span>
       <span class="info-value" id="info-remaining">--:--</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+      <span class="info-label">Distance</span>
+      <span class="info-value" id="info-distance">0.0 mi</span>
     </div>
     <div class="info-divider"></div>
     <div class="info-item">
