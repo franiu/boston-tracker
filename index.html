@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marathon Live Tracker</title>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Hamburger menu (debug mode access) -->
+  <button id="hamburger-btn" class="hamburger-btn" aria-label="Open menu">&#9776;</button>
+  <div id="hamburger-menu" class="hamburger-menu" hidden>
+    <div class="hamburger-menu-content">
+      <div class="debug-toggle-container">
+        <label class="debug-toggle-label" for="debug-toggle">
+          <span>Debug Mode</span>
+          <input type="checkbox" id="debug-toggle" class="debug-toggle-input">
+          <span class="debug-toggle-switch"></span>
+        </label>
+      </div>
+      <div class="time-slider-container" id="time-slider-container" style="display: none;">
+        <label for="time-slider" class="time-slider-label">
+          Race Progress: <span id="time-slider-value">0</span>%
+        </label>
+        <input type="range" id="time-slider" class="time-slider" min="0" max="100" value="0">
+      </div>
+    </div>
+  </div>
+
+  <!-- Runner info panel -->
+  <div id="info-panel" class="info-panel" style="display: none;">
+    <div class="info-item">
+      <span class="info-label">Start</span>
+      <span class="info-value" id="info-start-time">--:--</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+      <span class="info-label">Mile Pace</span>
+      <span class="info-value" id="info-mile-pace">--:--</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+      <span class="info-label">Avg Pace</span>
+      <span class="info-value" id="info-avg-pace">--:--</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+      <span class="info-label">Est. Remaining</span>
+      <span class="info-value" id="info-remaining">--:--</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+      <span class="info-label">Elapsed</span>
+      <span class="info-value" id="info-elapsed">0:00:00</span>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

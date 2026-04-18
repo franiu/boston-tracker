@@ -1,0 +1,13 @@
+{
+  "name": "marathon-live-tracker",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "vitest --run"
+  },
+  "devDependencies": {
+    "fast-check": "^4.0.0",
+    "jsdom": "^29.0.2",
+    "vitest": "^3.1.0"
+  }
+}
