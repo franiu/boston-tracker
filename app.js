@@ -45,6 +45,7 @@ const infoAvgPace = document.getElementById('info-avg-pace');
 const infoRemaining = document.getElementById('info-remaining');
 const infoElapsed = document.getElementById('info-elapsed');
 const infoDistance = document.getElementById('info-distance');
+const infoWallTime = document.getElementById('info-wall-time');
 
 /**
  * Formats decimal minutes to MM:SS string.
@@ -87,8 +88,11 @@ function getCurrentMilePace(distanceMiles) {
 /**
  * Updates the info panel with current stats.
  */
-function updateInfoPanel(elapsedMinutes, distanceMiles) {
+function updateInfoPanel(elapsedMinutes, distanceMiles, wallTime) {
   if (!infoPanel) return;
+
+  // Wall time (real clock or projected)
+  infoWallTime.textContent = wallTime ? formatClockTime(wallTime) : '--:--';
 
   // Start time
   infoStartTime.textContent = startTime ? formatClockTime(startTime) : '--:--';
@@ -134,12 +138,16 @@ function tick() {
   if (!startTime) return;
 
   let elapsedMinutes;
+  let wallTime;
 
   if (isDebugMode()) {
     const sliderPercent = getSliderValue();
     elapsedMinutes = (sliderPercent / 100) * totalRaceTime;
+    // Projected wall time = start time + simulated elapsed
+    wallTime = new Date(startTime.getTime() + elapsedMinutes * 60000);
   } else {
     elapsedMinutes = (Date.now() - startTime.getTime()) / 60000;
+    wallTime = new Date();
   }
 
   // Show info panel once simulation starts
@@ -148,14 +156,14 @@ function tick() {
   // Handle pre-start: marker at start
   if (elapsedMinutes <= 0) {
     updateRunnerPosition(coordinates[0]);
-    updateInfoPanel(elapsedMinutes, 0);
+    updateInfoPanel(elapsedMinutes, 0, wallTime);
     return;
   }
 
   // Handle post-finish: marker at finish
   if (elapsedMinutes >= totalRaceTime) {
     updateRunnerPosition(coordinates[coordinates.length - 1]);
-    updateInfoPanel(elapsedMinutes, 26.2);
+    updateInfoPanel(elapsedMinutes, 26.2, wallTime);
     return;
   }
 
@@ -163,7 +171,7 @@ function tick() {
   const distanceMiles = getDistanceAtTime(cumulativeTable, elapsedMinutes);
   const position = interpolatePosition(coordinates, distanceMiles, courseLengthMiles);
   updateRunnerPosition(position);
-  updateInfoPanel(elapsedMinutes, distanceMiles);
+  updateInfoPanel(elapsedMinutes, distanceMiles, wallTime);
 }
 
 /**

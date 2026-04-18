@@ -17,7 +17,7 @@
     <div class="hamburger-menu-content">
       <div class="debug-toggle-container">
         <label class="debug-toggle-label" for="debug-toggle">
-          <span>Debug Mode</span>
+          <span>Projection Mode</span>
           <input type="checkbox" id="debug-toggle" class="debug-toggle-input">
           <span class="debug-toggle-switch"></span>
         </label>
@@ -55,8 +55,23 @@
   <!-- Runner info panel -->
   <div id="info-panel" class="info-panel" style="display: none;">
     <div class="info-item">
+      <span class="info-label">Clock</span>
+      <span class="info-value" id="info-wall-time">--:--</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
       <span class="info-label">Start</span>
       <span class="info-value" id="info-start-time">--:--</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+      <span class="info-label">Elapsed</span>
+      <span class="info-value" id="info-elapsed">0:00:00</span>
+    </div>
+    <div class="info-divider"></div>
+    <div class="info-item">
+      <span class="info-label">Distance</span>
+      <span class="info-value" id="info-distance">0.0 mi</span>
     </div>
     <div class="info-divider"></div>
     <div class="info-item">
@@ -72,16 +87,6 @@
     <div class="info-item">
       <span class="info-label">Est. Remaining</span>
       <span class="info-value" id="info-remaining">--:--</span>
-    </div>
-    <div class="info-divider"></div>
-    <div class="info-item">
-      <span class="info-label">Distance</span>
-      <span class="info-value" id="info-distance">0.0 mi</span>
-    </div>
-    <div class="info-divider"></div>
-    <div class="info-item">
-      <span class="info-label">Elapsed</span>
-      <span class="info-value" id="info-elapsed">0:00:00</span>
     </div>
   </div>
 
