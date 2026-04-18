@@ -23,7 +23,6 @@ let sliderValue = 0;
 export function initUI(callbacks) {
   createOverlay(callbacks);
   createViewToggleButton(callbacks);
-  createSetStartTimeButton(callbacks);
   wireHamburgerMenu(callbacks);
 
   const storedTime = getStartTime();
@@ -186,22 +185,6 @@ function createViewToggleButton(callbacks) {
   document.body.appendChild(btn);
 }
 
-function createSetStartTimeButton(callbacks) {
-  const btn = document.createElement('button');
-  btn.className = 'set-start-time-btn';
-  btn.style.position = 'absolute';
-  btn.style.bottom = '90px';
-  btn.style.left = '50%';
-  btn.style.transform = 'translateX(-50%)';
-  btn.style.zIndex = '500';
-  btn.style.width = 'auto';
-  btn.textContent = 'Set Piotr Start Time';
-  btn.addEventListener('click', () => {
-    showOverlay();
-  });
-  document.body.appendChild(btn);
-}
-
 function wireHamburgerMenu(callbacks) {
   const hamburgerBtn = document.getElementById('hamburger-btn');
   const hamburgerMenu = document.getElementById('hamburger-menu');
@@ -219,6 +202,19 @@ function wireHamburgerMenu(callbacks) {
         hamburgerMenu.classList.add('open');
         hamburgerMenu.removeAttribute('hidden');
       }
+    });
+  }
+
+  // "Set Piotr Start Time" button in menu
+  const menuSetStartBtn = document.getElementById('menu-set-start-btn');
+  if (menuSetStartBtn) {
+    menuSetStartBtn.addEventListener('click', () => {
+      // Close the menu
+      if (hamburgerMenu) {
+        hamburgerMenu.classList.remove('open');
+        hamburgerMenu.setAttribute('hidden', '');
+      }
+      showOverlay();
     });
   }
 
