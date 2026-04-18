@@ -101,10 +101,26 @@ function createOverlay(callbacks) {
   const heading = document.createElement('h2');
   heading.textContent = 'Set Piotr Start Time';
 
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.placeholder = 'e.g. 2026-04-20T10:30:00';
-  input.id = 'start-time-input';
+  const row = document.createElement('div');
+  row.style.display = 'flex';
+  row.style.gap = '8px';
+  row.style.marginBottom = '12px';
+
+  const dateInput = document.createElement('input');
+  dateInput.type = 'date';
+  dateInput.id = 'start-date-input';
+  dateInput.value = '2026-04-20';
+  dateInput.style.flex = '1';
+
+  const timeInput = document.createElement('input');
+  timeInput.type = 'time';
+  timeInput.id = 'start-time-input';
+  timeInput.value = '10:00';
+  timeInput.step = '1';
+  timeInput.style.flex = '1';
+
+  row.appendChild(dateInput);
+  row.appendChild(timeInput);
 
   const submitBtn = document.createElement('button');
   submitBtn.className = 'set-start-time-btn';
@@ -115,25 +131,27 @@ function createOverlay(callbacks) {
   errorEl.style.display = 'none';
 
   submitBtn.addEventListener('click', () => {
-    handleSubmit(input, callbacks);
-  });
-
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      handleSubmit(input, callbacks);
-    }
+    handleDateTimeSubmit(dateInput, timeInput, callbacks);
   });
 
   modal.appendChild(heading);
-  modal.appendChild(input);
+  modal.appendChild(row);
   modal.appendChild(submitBtn);
   modal.appendChild(errorEl);
   overlayEl.appendChild(modal);
   document.body.appendChild(overlayEl);
 }
 
-function handleSubmit(input, callbacks) {
-  const result = validateStartTime(input.value);
+function handleDateTimeSubmit(dateInput, timeInput, callbacks) {
+  const dateVal = dateInput.value;
+  const timeVal = timeInput.value;
+
+  if (!dateVal || !timeVal) {
+    showError('Please select both a date and time.');
+    return;
+  }
+
+  const result = validateStartTime(`${dateVal}T${timeVal}`);
   if (!result.valid) {
     showError(result.error);
     return;

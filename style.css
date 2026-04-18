@@ -38,13 +38,11 @@ html, body, #map {
 }
 
 .start-time-modal input {
-  width: 100%;
   padding: 8px 12px;
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-sizing: border-box;
-  margin-bottom: 12px;
 }
 
 /* "Set Piotr Start Time" button */
